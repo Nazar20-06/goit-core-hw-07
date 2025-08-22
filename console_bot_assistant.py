@@ -79,6 +79,7 @@ class AddressBook(UserDict):
                     bday_date = bday_date.replace(year=today.year + 1)
                 delta = (bday_date - today).days
                 if 0 <= delta <= 7:
+                    # перенесення привітання з вихідних на понеділок
                     if bday_date.weekday() == 5:
                         bday_date += timedelta(days=2)
                     elif bday_date.weekday() == 6:
@@ -134,6 +135,8 @@ def change_contact(args, book: AddressBook):
 def get_phones(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
+    if record is None:
+        return "Помилка: Контакт не знайдено."
     if not record.phones:
         return "У цього контакту немає номерів."
     return ", ".join(p.value for p in record.phones)
@@ -145,14 +148,14 @@ def show_all(book: AddressBook):
     return "\n".join(str(record) for record in book.data.values())
 
 @input_error
-def add_birthday(args, book: AddressBook):
+def add_birthday_cmd(args, book: AddressBook):
     name, bday = args
     record = book.find(name)
     record.add_birthday(bday)
     return f"День народження для {name} додано."
 
 @input_error
-def show_birthday(args, book: AddressBook):
+def show_birthday_cmd(args, book: AddressBook):
     name = args[0]
     record = book.find(name)
     if record.birthday:
@@ -160,7 +163,7 @@ def show_birthday(args, book: AddressBook):
     raise ValueError("День народження не знайдено.")
 
 @input_error
-def birthdays(args, book: AddressBook):
+def birthdays_cmd(args, book: AddressBook):
     upcoming = book.get_upcoming_birthdays()
     if not upcoming:
         return "Немає днів народження цього тижня."
@@ -168,33 +171,33 @@ def birthdays(args, book: AddressBook):
 
 def main():
     book = AddressBook()
-    print("Вітаю у помічнику!")
+    print("Welcome to the assistant!")
 
     while True:
-        user_input = input("Введіть команду: ")
+        user_input = input("Enter command: ")
         command, args = parse_input(user_input)
 
-        if command in ["закрити", "вийти", "close", "exit"]:
-            print("До побачення!")
+        if command in ["close", "exit"]:
+            print("Good bye!")
             break
-        elif command in ["привіт", "hello"]:
-            print("Чим можу допомогти?")
-        elif command == "додати":
+        elif command == "hello":
+            print("How can I help you?")
+        elif command == "add":
             print(add_contact(args, book))
-        elif command == "змінити":
+        elif command == "change":
             print(change_contact(args, book))
-        elif command == "телефон":
+        elif command == "phone":
             print(get_phones(args, book))
-        elif command == "всі":
+        elif command == "all":
             print(show_all(book))
-        elif command == "додати-дн":
-            print(add_birthday(args, book))
-        elif command == "показати-дн":
-            print(show_birthday(args, book))
-        elif command == "дні-народження":
-            print(birthdays(args, book))
+        elif command == "add-birthday":
+            print(add_birthday_cmd(args, book))
+        elif command == "show-birthday":
+            print(show_birthday_cmd(args, book))
+        elif command == "birthdays":
+            print(birthdays_cmd(args, book))
         else:
-            print("Невідома команда.")
-
+            print("Unknown command.")
+            
 if __name__ == "__main__":
     main()
